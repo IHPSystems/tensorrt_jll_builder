@@ -32,12 +32,12 @@ pkg_specs = ["$pkg=$pkg_version" for pkg in pkgs]
 unpack_deb(pkg) = "dpkg-deb -x /var/cache/apt/archives/$(pkg)_$(pkg_version)_*.deb $(joinpath(@__DIR__
 , pkg))"
 cmds = """
-sudo apt-get update && \
-sudo apt-get install -y --no-install-recommends ca-certificates gnupg && \
-sudo apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/7fa2af80.pub && \
-echo "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64 /" | sudo tee /etc/apt/sources.list.d/cuda.list && \
-sudo apt-get update && \
-sudo apt-get install --download-only -y --no-install-recommends $(join(pkg_specs, " ")) && \
+apt-get update && \
+apt-get install -y --no-install-recommends ca-certificates gnupg && \
+apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/7fa2af80.pub && \
+echo "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64 /" | tee /etc/apt/sources.list.d/cuda.list && \
+apt-get update && \
+apt-get install --download-only -y --no-install-recommends $(join(pkg_specs, " ")) && \
 $(join([unpack_deb(pkg) for pkg in pkgs], " && "))
 """
 @info "Downloading TensorRT $version"

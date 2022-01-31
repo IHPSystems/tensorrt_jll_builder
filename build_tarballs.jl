@@ -69,7 +69,7 @@ products = Product[
 
 # Dependencies that must be installed before this package can be built
 dependencies = [
-    Dependency("CUDNN_jll"; compat=string(CUDNN_version))
+    Dependency("CUDNN_jll"; compat="^$(CUDNN_version.major)")
 ]
 
 # Build the tarballs, and possibly a `build.jl` as well.

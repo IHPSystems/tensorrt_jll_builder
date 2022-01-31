@@ -1,0 +1,37 @@
+name: CI
+on:
+  push:
+    branches:
+      - master
+    tags: '*'
+  pull_request:
+concurrency:
+  # Skip intermediate builds: always.
+  # Cancel intermediate builds: only if it is a pull request build.
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ startsWith(github.ref, 'refs/pull/') }}
+jobs:
+  build_binaries:
+    name: build_binaries - ${{ github.event_name }}
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: julia-actions/setup-julia@v1
+        with:
+          version: '1.7'
+          arch: x64
+      - uses: actions/cache@v2
+        env:
+          cache-name: cache-artifacts
+        with:
+          path: ~/.julia/artifacts
+          key: ${{ runner.os }}-build_binaries-${{ env.cache-name }}-${{ hashFiles('**/Project.toml') }}
+          restore-keys: |
+            ${{ runner.os }}-build_binaries-${{ env.cache-name }}-
+            ${{ runner.os }}-build_binaries-
+            ${{ runner.os }}-
+      - run: julia --project -e 'using Pkg; Pkg.instantiate()'
+      - run: julia --color=yes --project build_tarballs.jl --verbose --deploy=${BINARYBUILDER_DEPLOY_REPO}
+        env:
+          BINARYBUILDER_AUTOMATIC_APPLE: "true"
+          BINARYBUILDER_DEPLOY_REPO: local

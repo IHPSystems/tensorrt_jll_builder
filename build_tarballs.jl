@@ -36,20 +36,21 @@ apt-get install -y --no-install-recommends ca-certificates gnupg && \
 apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/7fa2af80.pub && \
 echo "deb https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64 /" > /etc/apt/sources.list.d/cuda.list && \
 apt-get update && \
-apt-get install --download-only $(join(pkg_specs, " ")) && \
+apt-get install --download-only -y --no-install-recommends $(join(pkg_specs, " ")) && \
 $(join([unpack_deb(pkg) for pkg in pkgs], " && "))
 """
-run(Cmd([cmds]))
+@info "Downloading TensorRT $version"
+run(`sh -c $cmds`)
 
 sources = [
-    DirectorySource(pkg for pkg in pkgs)
+    DirectorySource(pkg) for pkg in pkgs
 ]
 
 # Bash recipe for building across all platforms
 scripts = [
 """
-cp -av $pkg $prefix
-install_license $prefix/usr/share/doc/$pkg/copyright
+cp -av $pkg \$prefix
+install_license \$prefix/usr/share/doc/$pkg/copyright
 """
 for pkg in pkgs
 ]

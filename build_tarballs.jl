@@ -30,7 +30,7 @@ pkgs = vcat(bin_pkgs, dev_pkgs)
 pkg_version="$version-1+cuda$(CUDA_version.major).$(CUDA_version.minor)"
 pkg_specs = ["$pkg=$pkg_version" for pkg in pkgs]
 unpack_deb(pkg) = "dpkg-deb -x /var/cache/apt/archives/$(pkg)_$(pkg_version)_*.deb $(joinpath(@__DIR__
-, pkg))"
+, "src"))"
 cmds = """
 apt-get update && \
 apt-get install -y --no-install-recommends ca-certificates gnupg && \
@@ -44,18 +44,17 @@ $(join([unpack_deb(pkg) for pkg in pkgs], " && "))
 run(`sh -c $cmds`)
 
 sources = [
-    DirectorySource(pkg) for pkg in pkgs
+    DirectorySource("src")
 ]
 
 # Bash recipe for building across all platforms
 scripts = [
 """
-cp -av $pkg \$prefix
 install_license \$prefix/usr/share/doc/$pkg/copyright
 """
 for pkg in pkgs
 ]
-script = join(scripts, "\n")
+script = "cp -av src/* \$prefix/" * join(scripts, "\n")
 
 # These are the platforms we will build for by default, unless further
 # platforms are passed in on the command line
